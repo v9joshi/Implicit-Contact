@@ -21,7 +21,7 @@ stringF_k = optimalPinput(5*numPoints + 1:6*numPoints,1);
 slackString_k = optimalPinput(7*numPoints + 1:8*numPoints,1);
 
 %% Continue onwards
-params.numPoints = 320;
+params.numPoints = 500;
 
 totalTime = 2;
 params.diffTime = totalTime/params.numPoints;
@@ -96,7 +96,7 @@ Prob.user.params = params;
 % presult = tomRun('snopt', Prob, 1);
 % optimalPinput = presult.x_k;
 % 
-% numPoints = params.numPoints;
+numPoints = params.numPoints;
 
 %% Setup fmincon
 
@@ -104,7 +104,6 @@ objFun = @(pinput) objFile_Pendulum(pinput, Prob);
 conFun = @(pinput) consFile_Pendulum(pinput, Prob);
 
 [x_result, fVal] = fmincon(objFun, Pinput0, Aineq, bineq, Aeq, beq, LB, UB, conFun);
-
 
 %% unpack the states 
 % x_k = presult.x_k(1:numPoints,1);
@@ -149,11 +148,9 @@ hold off
 xlabel('knot point')
 ylabel('complimentarity constraint')
 
-legend('String tension')
-
 % Plot string length vs string tension
 figure(3)
-plot(stringLength - pivotToMassDist, stringF_k, 'o')
+plot(stringLength - pivotToMassDist, stringF_k, '-')
 hold off
 
 xlabel('Position')
