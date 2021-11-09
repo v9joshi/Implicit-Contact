@@ -10,7 +10,7 @@ params.g = 9.81;
 %% Initialize with small number of grid points
 load Solution_100gridPoints.mat
 
-numPoints = 100;
+numPoints = length(optimalPinput)/8;
 
 x_k = optimalPinput(1:numPoints,1);
 x_dot_k = optimalPinput(numPoints + 1:2*numPoints,1);
@@ -23,7 +23,7 @@ slackContact_k = optimalPinput(6*numPoints + 1:7*numPoints,1);
 slackString_k = optimalPinput(7*numPoints + 1:8*numPoints,1);
 
 %% Continue onwards
-params.numPoints = 10;
+params.numPoints = 150;
 
 totalTime = 2;
 params.diffTime = totalTime/params.numPoints;
@@ -103,7 +103,9 @@ Prob.user.params = params;
 objFun = @(pinput) objFile_Pendulum(pinput, Prob);
 conFun = @(pinput) consFile_Pendulum(pinput, Prob);
 
-[x_result, fVal] = fmincon(objFun, Pinput0, Aineq, bineq, Aeq, beq, LB, UB, conFun);
+options = optimset('MaxFunEvals',200000,'Display','iter');
+
+[x_result, fVal] = fmincon(objFun, Pinput0, Aineq, bineq, Aeq, beq, LB, UB, conFun, options);
 numPoints = params.numPoints;
 
 %% unpack the states 
@@ -167,3 +169,6 @@ xlabel('Position')
 ylabel('Force')
 
 legend('Contact','String tension')
+
+%% animation
+animateSolution();
