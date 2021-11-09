@@ -62,56 +62,70 @@ UB =  [];
 
 % Inequalities and equalities
 Aineq = [];
-Bineq = [];
+bineq = [];
 
 Aeq = [];
-Beq = [];
+beq = [];
 
 %% setup SNOPT
+% Prob.user.params = params;
+% [cineq_temp,ceq_temp] = consFile_Pendulum(Pinput0,Prob);
+%  
+% Aineq = []; Bineq_LB = []; Bineq_UB = []; 
+% 
+% c_LB = [-Inf*ones(size(cineq_temp)); 0*ones(size(ceq_temp))];
+% c_UB = [0*ones(size(cineq_temp)); 0*ones(size(ceq_temp))];
+% fLowBnd = 0;
+% 
+% Prob = ...
+%     conAssign(@objFile_Pendulum, [], [], [], LB, UB, 'Point Mass Simulation', ...
+%     Pinput0, [], fLowBnd, ...
+%     Aineq, Bineq_LB, Bineq_UB, ...
+%     @conscons_Pendulum, [], [], [], c_LB, c_UB, ...
+%     [], [], [], []);
+ 
 Prob.user.params = params;
-[cineq_temp,ceq_temp] = consFile_Pendulum(Pinput0,Prob);
- 
-Aineq = []; Bineq_LB = []; Bineq_UB = []; 
 
-c_LB = [-Inf*ones(size(cineq_temp)); 0*ones(size(ceq_temp))];
-c_UB = [0*ones(size(cineq_temp)); 0*ones(size(ceq_temp))];
-fLowBnd = 0;
-
-Prob = ...
-    conAssign(@objFile_Pendulum, [], [], [], LB, UB, 'Point Mass Simulation', ...
-    Pinput0, [], fLowBnd, ...
-    Aineq, Bineq_LB, Bineq_UB, ...
-    @conscons_Pendulum, [], [], [], c_LB, c_UB, ...
-    [], [], [], []);
- 
-Prob.user.params = params;
-
-Prob.SOL.optPar(35) = 1000; % major iterations limit
-Prob.SOL.optPar(36) = 20000; % minor iterations limit (in the QP)
-
-Prob.SOL.optPar(41) = 1e-12;
-Prob.Solver.Tomlab = 'snopt'; 
- 
-global funevalcounter; 
-funevalcounter = 0; 
-options = [];
+% Prob.SOL.optPar(35) = 1000; % major iterations limit
+% Prob.SOL.optPar(36) = 20000; % minor iterations limit (in the QP)
+% 
+% Prob.SOL.optPar(41) = 1e-12;
+% Prob.Solver.Tomlab = 'snopt'; 
+%  
+% global funevalcounter; 
+% funevalcounter = 0; 
+% options = [];
 
 %% Run optimization
-presult = tomRun('snopt', Prob, 1);
-optimalPinput = presult.x_k;
+% presult = tomRun('snopt', Prob, 1);
+% optimalPinput = presult.x_k;
 
+objFun = @(pinput) objFile_Pendulum(pinput, Prob);
+conFun = @(pinput) consFile_Pendulum(pinput, Prob);
+
+[x_result, fVal] = fmincon(objFun, Pinput0, Aineq, bineq, Aeq, beq, LB, UB, conFun);
 numPoints = params.numPoints;
 
 %% unpack the states 
-x_k = presult.x_k(1:numPoints,1);
-x_dot_k = presult.x_k(numPoints + 1:2*numPoints,1);
-y_k = presult.x_k(2*numPoints + 1:3*numPoints,1);
-y_dot_k = presult.x_k(3*numPoints + 1:4*numPoints,1);
-contactF_y_k = presult.x_k(4*numPoints + 1:5*numPoints,1);
-stringF_k = presult.x_k(5*numPoints + 1:6*numPoints,1);
+% x_k = presult.x_k(1:numPoints,1);
+% x_dot_k = presult.x_k(numPoints + 1:2*numPoints,1);
+% y_k = presult.x_k(2*numPoints + 1:3*numPoints,1);
+% y_dot_k = presult.x_k(3*numPoints + 1:4*numPoints,1);
+% contactF_y_k = presult.x_k(4*numPoints + 1:5*numPoints,1);
+% stringF_k = presult.x_k(5*numPoints + 1:6*numPoints,1);
+% 
+% slackContact_k = presult.x_k(6*numPoints + 1:7*numPoints,1);
+% slackString_k = presult.x_k(7*numPoints + 1:8*numPoints,1);
 
-slackContact_k = presult.x_k(6*numPoints + 1:7*numPoints,1);
-slackString_k = presult.x_k(7*numPoints + 1:8*numPoints,1);
+x_k = x_result(1:numPoints,1);
+x_dot_k = x_result(numPoints + 1:2*numPoints,1);
+y_k = x_result(2*numPoints + 1:3*numPoints,1);
+y_dot_k = x_result(3*numPoints + 1:4*numPoints,1);
+contactF_y_k = x_result(4*numPoints + 1:5*numPoints,1);
+stringF_k = x_result(5*numPoints + 1:6*numPoints,1);
+
+slackContact_k = x_result(6*numPoints + 1:7*numPoints,1);
+slackString_k = x_result(7*numPoints + 1:8*numPoints,1);
 
 %% Plot the trajectory
 figure(1)
@@ -144,9 +158,9 @@ legend('Contact','String tension')
 
 % Plot string length vs string tension
 figure(3)
-plot(y_k(2:end), contactF_y_k(1:end-1), 'o')
+plot(y_k(2:end), contactF_y_k(1:end-1), '-o')
 hold on
-plot(stringLength - pivotToMassDist, stringF_k, 'o')
+plot(stringLength - pivotToMassDist, stringF_k, '-o')
 hold off
 
 xlabel('Position')
