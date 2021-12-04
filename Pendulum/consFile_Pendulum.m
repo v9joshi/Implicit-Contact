@@ -63,7 +63,7 @@ function [cineq, ceq] = consFile_Pendulum(pinput, prob)
     constraint_PositivePosition = -y_k; % No interpenetration
     constraint_ContactSlackPositive = -slackContact_k; % Slack variables should be positive
 
-    % 4. S  tring constraints
+    % 4. String constraints
     constraint_NotTautNoForce = stringF_k(1:end-1).*(stringLength - pivotToMassDist(2:end)) - slackString_k(1:end-1); % tension only when string is taut
     constraint_StringInTension = -stringF_k; % String can't be in compression
     constraint_StringLength = -(stringLength - pivotToMassDist); % Pivot to mass distance can't be more than string length
