@@ -47,24 +47,30 @@ function [cineq, ceq] = consFile_Pendulum(pinput, prob)
     horizontalStringForce = stringF_k.*(xPivot - x_k)/stringLength;
     totalHorizontalForce = horizontalStringForce;
     
-    constraint_X_K = -x_k(2:end) + x_k(1:end-1) + diffTime*0.5*(x_dot_k(2:end) + x_dot_k(1:end-1)); 
-    constraint_X_dot_K = -x_dot_k(2:end) + x_dot_k(1:end-1)  + diffTime*(0.5*(totalHorizontalForce(2:end) + totalHorizontalForce(1:end-1))/mass);
+    constraint_X_K = x_k(2:end) - x_k(1:end-1) - diffTime*0.5*(x_dot_k(2:end) + x_dot_k(1:end-1)); 
+    constraint_X_dot_K = x_dot_k(2:end) - x_dot_k(1:end-1)  - diffTime*(0.5*(totalHorizontalForce(2:end) + totalHorizontalForce(1:end-1))/mass);
 
     % 2. Vertical dynamics should be followed
     verticalStringForce = stringF_k.*(yPivot - y_k)/stringLength;
     totalVerticalForce = contactF_y_k + verticalStringForce - mass*g;
 
-    constraint_Y_K = -y_k(2:end) + y_k(1:end-1) + diffTime*0.5*(y_dot_k(2:end) + y_dot_k(1:end-1));
-    constraint_Y_dot_K = -y_dot_k(2:end) + y_dot_k(1:end-1) + diffTime*(0.5*(totalVerticalForce(2:end) + totalVerticalForce(1:end-1))/mass);
+    constraint_Y_K = y_k(2:end) - y_k(1:end-1) - diffTime*0.5*(y_dot_k(2:end) + y_dot_k(1:end-1));
+    constraint_Y_dot_K = y_dot_k(2:end) - y_dot_k(1:end-1) - diffTime*(0.5*(totalVerticalForce(2:end) + totalVerticalForce(1:end-1))/mass);
 
     % 3. Contact constraints
     constraint_NoContactNoForce = contactF_y_k(1:end-1).*y_k(2:end) - slackContact_k(1:end-1); % Normal force only when touching the ground
+    % Note: constraints are written to prevent violations at the next
+    % knot-point, i.e. F_k is non-zero to prevent y_k+1 from becoming
+    % negative.
     constraint_PositiveForce = -contactF_y_k; % Contact force can't be negative
     constraint_PositivePosition = -y_k; % No interpenetration
     constraint_ContactSlackPositive = -slackContact_k; % Slack variables should be positive
 
     % 4. String constraints
     constraint_NotTautNoForce = stringF_k(1:end-1).*(stringLength - pivotToMassDist(2:end)) - slackString_k(1:end-1); % tension only when string is taut
+    % Note: constraints are written to prevent violations at the next
+    % knot-point, i.e. F_k is non-zero to prevent pivotToMassDist_k+1 
+    % from becoming greater than stringLength.
     constraint_StringInTension = -stringF_k; % String can't be in compression
     constraint_StringLength = -(stringLength - pivotToMassDist); % Pivot to mass distance can't be more than string length
     constraint_TensionSlackPositive = -slackString_k; % Slack variables should be positive
