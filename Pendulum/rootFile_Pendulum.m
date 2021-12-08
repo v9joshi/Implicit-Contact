@@ -8,35 +8,35 @@ params.mass = 1;
 params.g = 9.81;
 
 %% Initialize with small number of grid points
-load Solution_100gridPoints.mat
+load test_stationary_150pts.mat %Solution_100gridPoints.mat
 
 numPoints = length(optimalPinput)/8;
 
-x_k = optimalPinput(1:numPoints,1);
-x_dot_k = optimalPinput(numPoints + 1:2*numPoints,1);
-y_k = optimalPinput(2*numPoints + 1:3*numPoints,1);
-y_dot_k = optimalPinput(3*numPoints + 1:4*numPoints,1);
-contactF_y_k = optimalPinput(4*numPoints + 1:5*numPoints,1);
-stringF_k = optimalPinput(5*numPoints + 1:6*numPoints,1);
+x_k = optimalPinput(1:numPoints,1);%*0+ 0.01;
+x_dot_k = optimalPinput(numPoints + 1:2*numPoints,1);%*0;
+y_k = optimalPinput(2*numPoints + 1:3*numPoints,1);%*0;
+y_dot_k = optimalPinput(3*numPoints + 1:4*numPoints,1);%*0;
+contactF_y_k = optimalPinput(4*numPoints + 1:5*numPoints,1);%*0 + 9.81*ones(numPoints,1);
+stringF_k = optimalPinput(5*numPoints + 1:6*numPoints,1);%*0;
 
-slackContact_k = optimalPinput(6*numPoints + 1:7*numPoints,1);
-slackString_k = optimalPinput(7*numPoints + 1:8*numPoints,1);
+slackContact_k = optimalPinput(6*numPoints + 1:7*numPoints,1);%*0;
+slackString_k = optimalPinput(7*numPoints + 1:8*numPoints,1);%*0;
 
 %% Continue onwards
-params.numPoints = 150;
+params.numPoints = 300;
 
-totalTime = 2;
+totalTime = 1;
 params.diffTime = totalTime/params.numPoints;
 
 % pivot point
-params.pivotX = 0.5;
+params.pivotX = 0;
 params.pivotY = 0.8;
 params.stringLength = 0.9;
 
 % initial conditions
 params.x0 = 0;
 params.xdot0 = 0;
-params.y0 = 0.8;
+params.y0 = 0;
 params.ydot0 = 0;
 
 % set up a bunch of state variables
@@ -103,7 +103,7 @@ Prob.user.params = params;
 objFun = @(pinput) objFile_Pendulum(pinput, Prob);
 conFun = @(pinput) consFile_Pendulum(pinput, Prob);
 
-options = optimset('MaxFunEvals',200000,'Display','iter');
+options = optimset('MaxFunEvals',400000,'Display','iter');
 
 [x_result, fVal] = fmincon(objFun, Pinput0, Aineq, bineq, Aeq, beq, LB, UB, conFun, options);
 numPoints = params.numPoints;
@@ -147,6 +147,7 @@ yPivot = params.pivotY;
 stringLength = params.stringLength;
 
 pivotToMassDist = sqrt((x_k - xPivot).^2 + (y_k - yPivot).^2);
+
 figure(2)
 plot(contactF_y_k(1:end-1).*y_k(2:end))
 hold on
