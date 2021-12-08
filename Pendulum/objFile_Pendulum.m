@@ -9,5 +9,5 @@ function costVal = objFile_Pendulum(pinput, prob)
 
     % Minimize the slack variables for the contact contraint and the 
     % pendulum string constraint
-    costVal = (sum(slackContact_k.^2) + sum(slackString_k.^2));
+    costVal = 100*(sum(slackContact_k) + sum(slackString_k));
 end
