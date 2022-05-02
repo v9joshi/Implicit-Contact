@@ -16,8 +16,8 @@ for currTime = 1:length(x_k)
     dotHandle.XData = x_k(currTime);
     dotHandle.YData = y_k(currTime);
     hold off   
-    ylim([-0.2,1.2])
-    xlim([-0.2,1.2])
+    ylim([-1.2,1.2])
+    xlim([-1.2,1.2])
     axis 'square'
     drawnow
     pause(0.01)

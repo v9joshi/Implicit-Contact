@@ -8,7 +8,7 @@ params.mass = 1;
 params.g = 9.81;
 
 %% Initialize with small number of grid points
-load test_stationary_150pts.mat %Solution_100gridPoints.mat
+load Solution_100gridPoints.mat
 
 numPoints = length(optimalPinput)/8;
 
@@ -23,20 +23,20 @@ slackContact_k = optimalPinput(6*numPoints + 1:7*numPoints,1);%*0;
 slackString_k = optimalPinput(7*numPoints + 1:8*numPoints,1);%*0;
 
 %% Continue onwards
-params.numPoints = 300;
+params.numPoints = 50;
 
-totalTime = 1;
+totalTime = 2;
 params.diffTime = totalTime/params.numPoints;
 
 % pivot point
 params.pivotX = 0;
-params.pivotY = 0.8;
-params.stringLength = 0.9;
+params.pivotY = 0.9;
+params.stringLength = 0.95;
 
 % initial conditions
-params.x0 = 0;
+params.x0 = -0.8;
 params.xdot0 = 0;
-params.y0 = 0;
+params.y0 = 0.9;
 params.ydot0 = 0;
 
 % set up a bunch of state variables
@@ -163,7 +163,7 @@ legend('Contact','String tension')
 figure(3)
 plot(y_k(2:end), contactF_y_k(1:end-1), '-o')
 hold on
-plot(stringLength - pivotToMassDist, stringF_k, '-o')
+plot(stringLength - pivotToMassDist(2:end), stringF_k(1:end-1), '-o')
 hold off
 
 xlabel('Position')
